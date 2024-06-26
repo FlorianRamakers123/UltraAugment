@@ -1,0 +1,111 @@
+{
+    "batch_size": 10,
+    "num_epochs": 100,
+    "validation_key_metric": "val_dice",
+    "validation_interval": 5,
+    "train_val_test_split": [0.2, 0.2],
+    "class_names": ["background", "SP", "FH"],
+    "spatial_size": 256,
+    "num_classes": 3,
+    "seed": 1234,
+    "model_input_keys": ["image"],
+    "num_channels": 1,
+    "training_checkpoint_interval": 101,
+    "label_file": "FH_SP_folds.csv",
+    "partition_column_name": ["fold0", "fold1", "fold2", "fold3", "fold4"],
+    "k_fold_cross_validation": 5,
+    "patient_id_key": "patient_id",
+    "pretransforms": {
+        "image": "LoadImaged->EnsureChannelFirstd->Resized->SpatialPadd->EnsureTyped",
+        "mask": "LoadImaged->EnsureChannelFirstd->ResizeNearestd->SpatialPadd2->ToOneHotd->EnsureTyped"
+
+    },
+    "augmentation_transforms": {
+        "image": "Identityd"
+    },
+    "posttransforms": {
+        "pred": "Activationsd->AsDiscreted"
+    },
+    "train_metrics": {
+        "train_dice": {
+            "class": "metrics.segmentation_metrics.PatientCorrectedDiceScore",
+            "input_keys": ["pred", "mask", "patient_id"],
+            "args": {
+                "keep_channel_dim": false,
+                "reduce": true
+            }
+        }
+    },
+    "validation_metrics": {
+        "val_dice": {
+            "class": "metrics.segmentation_metrics.PatientCorrectedDiceScore",
+            "input_keys": ["pred", "mask", "patient_id"],
+            "args": {
+                "keep_channel_dim": false,
+                "reduce": true
+            }
+        }
+    },
+    "test_metrics": {
+        "test_dice": {
+            "class": "metrics.segmentation_metrics.PatientCorrectedDiceScore",
+            "input_keys": ["pred", "mask", "patient_id"],
+            "args": {
+                "keep_channel_dim": true,
+                "reduce": false
+            }
+        },
+        "test_hd": {
+            "class": "metrics.segmentation_metrics.PatientCorrectedHausdorffDistance",
+            "input_keys": ["pred", "mask", "patient_id"],
+            "args": {
+                "keep_channel_dim": true,
+                "reduce": false
+            }
+        }
+    },
+    "network_class": "monai.networks.nets.DynUNet",
+    "network_args": {
+        "spatial_dims": 2,
+        "in_channels": 1,
+        "out_channels": 3,
+        "kernel_size": [[3, 3], [3, 3], [3, 3], [3, 3], [3, 3]],
+        "strides": [[1, 1], [2, 2], [2, 2], [2, 2], [2, 2]],
+        "upsample_kernel_size": [[2, 2], [2, 2], [2, 2], [2, 2]],
+        "deep_supervision" : true,
+        "deep_supr_num": 3
+    },
+    "optimizer_class": "torch.optim.Adam",
+    "optimizer_args": { "lr": 0.001, "weight_decay": 1e-2 },
+    "loss_func": [{
+        "class": "monai.losses.DiceCELoss",
+        "weight": 1.0,
+        "deepsupervision": true,
+        "input_keys": ["pred", "mask"],
+        "args": {
+            "softmax": true
+        }
+    }],
+    "deep_supervision": true,
+    "image_keys_cutmix_mixup": ["image"],
+    "label_keys_cutmix_mixup": ["mask"],
+    "fan_mask_keys_cutmix_mixup": ["fan_mask"],
+    "mixup_cutmix_prob": [0.0,0.0],
+    "preceding_mixup_cutmix": true,
+    "alpha_mixup": 0.5,
+    "transforms": {
+      "SliceAtCentreOfMassd": {
+          "class": "util.transforms_util.SliceAtCentreOfMassd",
+          "args": {
+              "label_keys": "mask",
+              "dim": -1
+          }
+      },
+      "SpatialPadd2": {
+        "class": "monai.transforms.SpatialPadd",
+        "args": {
+            "spatial_size": [256,256]
+        }
+      }
+    }
+}
