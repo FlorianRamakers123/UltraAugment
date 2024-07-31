@@ -52,16 +52,3 @@ torchvision                       0.14.0+cu117
 tqdm                              4.65.0
 ```
 
-## Citation
-If you find this code useful for your research, please cite the following paper:
-```
-@InProceedings{Ramakers_2024_CVPR,
-    author    = {Ramakers, Florian and Vercauteren, Tom and Deprest, Jan and Williams, Helena},
-    title     = {UltraAugment: Fan-shape and Artifact-based Data Augmentation for 2D Ultrasound Images},
-    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops},
-    month     = {June},
-    year      = {2024},
-    pages     = {2422-2431}
-}
-```
-
